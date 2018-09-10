@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_eyepetizer/data/bean/consumption.dart';
 import 'package:flutter_eyepetizer/data/bean/owner.dart';
 import 'package:flutter_eyepetizer/data/bean/tag.dart';
+import 'package:flutter_eyepetizer/detail/detail.dart';
 import 'package:flutter_eyepetizer/utils/app_icons.dart';
 import 'author.dart';
 import 'cover.dart';
@@ -488,7 +489,9 @@ class UgcVideoBean extends UgcBean {
       child: GestureDetector(
         child: buildVideo(),
         onTap: () {
-          Navigator.pushNamed(context, "video_detail");
+//          Navigator.push(context, MaterialPageRoute(builder: (context){
+//            return VideoDetailPage();
+//          }));
         },
       ),
     );
@@ -632,7 +635,7 @@ class VideoBeanForClient extends BaseData {
   String description;
   String library;
 
-//    Consumption consumption;
+    Consumption consumption;
   String resourceType;
 
 //    Provider provider;
@@ -680,7 +683,7 @@ class VideoBeanForClient extends BaseData {
 //  Object playlists;
   int src;
 
-//    List<Tag> tags;
+    List<Tag> tags;
 //    List<PlayInfo> playInfo;
 //    List<Label> labelList;
 //    List<?> subtitles;
@@ -711,6 +714,11 @@ class VideoBeanForClient extends BaseData {
     src = map["src"];
     cover = Cover.fromMap(map["cover"]);
     author = Author.fromMap(map["author"]);
+    consumption=Consumption.fromMap(map["consumption"]);
+    List<dynamic> dyTags=map["tags"];
+    tags=dyTags.map((dyTag){
+      return Tag.fromMap(dyTag);
+    }).toList();
   }
 
   @override
@@ -728,7 +736,9 @@ class VideoBeanForClient extends BaseData {
         child: GestureDetector(
           child: buildVideo(),
           onTap: () {
-            Navigator.pushNamed(context, "video_detail");
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+              return VideoDetailPage(this);
+            }));
           },
         ),
       );

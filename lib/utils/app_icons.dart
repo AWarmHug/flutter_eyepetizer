@@ -8,5 +8,6 @@ class AppIcons{
   static const IconData share=IconData(0xe628,fontFamily: "MyIcon");
   static const IconData download=IconData(0xe63d,fontFamily: "MyIcon");
   static const IconData like=IconData(0xe63d,fontFamily: "MyIcon");
+  static const IconData reply=IconData(0xe63d,fontFamily: "MyIcon");
 
 }

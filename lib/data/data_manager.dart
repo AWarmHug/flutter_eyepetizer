@@ -46,4 +46,18 @@ Future<PageData> getPageData(String url,
     }
   }
 }
+//http://baobab.kaiyanapp.com/api/v4/video/related?id=56182&udid=08eda8e6ceb44c7387c7cdb5db781a7c3ae1dd8a
 
+Future<List<ContentItem>> getVideoRelated(int id) async{
+  String url="http://baobab.kaiyanapp.com/api/v4/video/related?id=$id&udid=08eda8e6ceb44c7387c7cdb5db781a7c3ae1dd8a";
+
+  Response response = await get(url, headers: _default);
+  if (response.statusCode == 200) {
+    if (response.body != null) {
+      return PageData.fromJson(response.body).itemList;
+    }
+  } else {
+
+  }
+
+}

@@ -69,9 +69,7 @@ class _IndexAppState extends State<IndexApp>
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      routes: {"video_detail":(context){
-        return VideoDetailPage();
-      }},
+      routes: {},
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: Colors.white,
