@@ -41,28 +41,30 @@ class _VideoDetailState extends State<VideoDetailPage> {
 
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.black54,
-        body: Column(
-          children: <Widget>[
-            playerWidget,
-            Expanded(
-              child: ListView.builder(
-                itemBuilder: (context, position) {
-                  switch (position) {
-                    case 0:
-                      return buildVideoInfo(context);
-                    case 1:
-                      return buildTags(context);
-                    case 2:
-                      return buildAuthor(context);
-                    default:
-                      return buildRelatedInfo(context, position - 3);
-                  }
-                },
-                itemCount: _contentItems.length + 3,
-              ),
-            )
-          ],
+        body: Container(
+          decoration: BoxDecoration(image: DecorationImage(image: CachedNetworkImageProvider(widget.videoBeanForClient.cover.blurred),fit: BoxFit.cover)),
+          child: Column(
+            children: <Widget>[
+              playerWidget,
+              Expanded(
+                child: ListView.builder(
+                  itemBuilder: (context, position) {
+                    switch (position) {
+                      case 0:
+                        return buildVideoInfo(context);
+                      case 1:
+                        return buildTags(context);
+                      case 2:
+                        return buildAuthor(context);
+                      default:
+                        return buildRelatedInfo(context, position - 3);
+                    }
+                  },
+                  itemCount: _contentItems.length + 3,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -84,28 +86,68 @@ class _VideoDetailState extends State<VideoDetailPage> {
       ),
     );
     Widget action = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
         FlatButton.icon(
             onPressed: null,
-            icon: Icon(AppIcons.like),
+            icon: Icon(
+              AppIcons.like,
+              color: Colors.white,
+              size: 20.0,
+            ),
             label: Text(
-                "${widget.videoBeanForClient.consumption.collectionCount}")),
+              "${widget.videoBeanForClient.consumption.collectionCount}",
+              style: TextStyle(color: Colors.white, fontSize: 12.0),
+              textAlign: TextAlign.center,
+            )),
         FlatButton.icon(
             onPressed: null,
-            icon: Icon(AppIcons.share),
-            label: Text("${widget.videoBeanForClient.consumption.shareCount}")),
+            icon: Icon(
+              AppIcons.share,
+              color: Colors.white,
+              size: 20.0,
+            ),
+            label: Text(
+              "${widget.videoBeanForClient.consumption.shareCount}",
+              style: TextStyle(color: Colors.white, fontSize: 12.0),
+              textAlign: TextAlign.center,
+            )),
         FlatButton.icon(
             onPressed: null,
-            icon: Icon(AppIcons.reply),
-            label: Text("${widget.videoBeanForClient.consumption.replyCount}")),
+            icon: Icon(
+              AppIcons.reply,
+              color: Colors.white,
+              size: 20.0,
+            ),
+            label: Text(
+              "${widget.videoBeanForClient.consumption.replyCount}",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12.0,
+              ),
+              textAlign: TextAlign.center,
+            )),
         FlatButton.icon(
-            onPressed: null, icon: Icon(AppIcons.download), label: Text("缓存")),
+            onPressed: null,
+            icon: Icon(
+              AppIcons.download,
+              color: Colors.white,
+              size: 20.0,
+            ),
+            label: Text(
+              "缓存",
+              style: TextStyle(color: Colors.white, fontSize: 12.0),
+              textAlign: TextAlign.center,
+            )),
       ],
     );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[title, description, action],
+    return Padding(
+      padding: const EdgeInsets.only(left: 12.0, right: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[title, description, action],
+      ),
     );
   }
 
@@ -116,15 +158,21 @@ class _VideoDetailState extends State<VideoDetailPage> {
         width: (MediaQuery.of(context).size.width - 40) /
             widget.videoBeanForClient.tags.length,
         alignment: Alignment.center,
-        child: Text(tag.name,style: TextStyle(color: Colors.white,fontSize: 12.0),),
+        child: Text(
+          tag.name,
+          style: TextStyle(color: Colors.white, fontSize: 12.0),
+        ),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(4.0)),
             image: DecorationImage(image: NetworkImage(tag.bgPicture))),
       );
     }).toList();
-    return Row(
-      children: tagWidgets,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Padding(
+      padding: const EdgeInsets.only(left: 12.0,top: 8.0, right: 12.0,bottom: 8.0),
+      child: Row(
+        children: tagWidgets,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      ),
     );
   }
 
@@ -138,29 +186,33 @@ class _VideoDetailState extends State<VideoDetailPage> {
       height: 42.0,
     ));
     Widget info = Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Padding(
+          padding: const EdgeInsets.only(left:12.0),
+          child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          widget.videoBeanForClient.author.name,
-          style: TextStyle(
-              color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          widget.videoBeanForClient.author.description,
-          style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12.0,
-              fontWeight: FontWeight.bold),
-        )
+          Text(
+            widget.videoBeanForClient.author.name,
+            style: TextStyle(
+                color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            widget.videoBeanForClient.author.description,
+            style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12.0,
+                fontWeight: FontWeight.bold),
+          )
       ],
-    ));
+    ),
+        ));
 
     return Container(
-      padding: EdgeInsets.only(left: 12.0,top: 8.0,right: 12.0,bottom: 8.0),
+        padding:
+            EdgeInsets.only(left: 12.0, top: 8.0, right: 12.0, bottom: 8.0),
         child: Row(
-      children: <Widget>[icon, info],
-    ));
+          children: <Widget>[icon, info],
+        ));
   }
 
   Widget buildRelatedInfo(BuildContext context, int position) {
