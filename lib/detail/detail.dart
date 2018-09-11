@@ -42,7 +42,11 @@ class _VideoDetailState extends State<VideoDetailPage> {
     return MaterialApp(
       home: Scaffold(
         body: Container(
-          decoration: BoxDecoration(image: DecorationImage(image: CachedNetworkImageProvider(widget.videoBeanForClient.cover.blurred),fit: BoxFit.cover)),
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: CachedNetworkImageProvider(
+                      widget.videoBeanForClient.cover.blurred),
+                  fit: BoxFit.cover)),
           child: Column(
             children: <Widget>[
               playerWidget,
@@ -168,7 +172,8 @@ class _VideoDetailState extends State<VideoDetailPage> {
       );
     }).toList();
     return Padding(
-      padding: const EdgeInsets.only(left: 12.0,top: 8.0, right: 12.0,bottom: 8.0),
+      padding:
+          const EdgeInsets.only(left: 12.0, top: 8.0, right: 12.0, bottom: 8.0),
       child: Row(
         children: tagWidgets,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -187,14 +192,16 @@ class _VideoDetailState extends State<VideoDetailPage> {
     ));
     Widget info = Expanded(
         child: Padding(
-          padding: const EdgeInsets.only(left:12.0),
-          child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
+      padding: const EdgeInsets.only(left: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
           Text(
             widget.videoBeanForClient.author.name,
             style: TextStyle(
-                color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontSize: 14.0,
+                fontWeight: FontWeight.bold),
           ),
           Text(
             widget.videoBeanForClient.author.description,
@@ -203,9 +210,9 @@ class _VideoDetailState extends State<VideoDetailPage> {
                 fontSize: 12.0,
                 fontWeight: FontWeight.bold),
           )
-      ],
-    ),
-        ));
+        ],
+      ),
+    ));
 
     return Container(
         padding:

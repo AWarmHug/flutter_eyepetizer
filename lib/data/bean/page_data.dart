@@ -372,9 +372,11 @@ class UgcBean extends BaseData {
     cover = Cover.fromMap(map["cover"]);
     owner = Owner.fromMpa(map["owner"]);
     List<dynamic> dyTags = map["tags"];
-    tags = dyTags.map((dyTag) {
-      return Tag.fromMap(dyTag);
-    }).toList();
+    if (dyTags != null) {
+      tags = dyTags.map((dyTag) {
+        return Tag.fromMap(dyTag);
+      }).toList();
+    }
   }
 
   @override
@@ -510,6 +512,7 @@ class UgcVideoBean extends UgcBean {
         imageUrl: cover.detail,
         placeholder: Center(child: new CircularProgressIndicator()),
         errorWidget: new Icon(Icons.error),
+        fit: BoxFit.fitWidth,
       ),
       borderRadius: BorderRadius.all(Radius.circular(4.0)),
     );
@@ -635,7 +638,7 @@ class VideoBeanForClient extends BaseData {
   String description;
   String library;
 
-    Consumption consumption;
+  Consumption consumption;
   String resourceType;
 
 //    Provider provider;
@@ -683,7 +686,8 @@ class VideoBeanForClient extends BaseData {
 //  Object playlists;
   int src;
 
-    List<Tag> tags;
+  List<Tag> tags;
+
 //    List<PlayInfo> playInfo;
 //    List<Label> labelList;
 //    List<?> subtitles;
@@ -714,9 +718,9 @@ class VideoBeanForClient extends BaseData {
     src = map["src"];
     cover = Cover.fromMap(map["cover"]);
     author = Author.fromMap(map["author"]);
-    consumption=Consumption.fromMap(map["consumption"]);
-    List<dynamic> dyTags=map["tags"];
-    tags=dyTags.map((dyTag){
+    consumption = Consumption.fromMap(map["consumption"]);
+    List<dynamic> dyTags = map["tags"];
+    tags = dyTags.map((dyTag) {
       return Tag.fromMap(dyTag);
     }).toList();
   }
@@ -731,7 +735,6 @@ class VideoBeanForClient extends BaseData {
       );
     } else {
       return Container(
-        height: 300.0,
         margin: EdgeInsets.only(left: 12.0, right: 12.0),
         child: GestureDetector(
           child: buildVideo(),
@@ -748,22 +751,27 @@ class VideoBeanForClient extends BaseData {
   Widget buildVideo() {
     return Column(
       children: <Widget>[
-        Container(
-          height: 200.0,
-          child: buildImage(),
+        ClipRRect(
+          child: CachedNetworkImage(
+            imageUrl: cover.detail,
+            placeholder: Center(child: new CircularProgressIndicator()),
+            errorWidget: new Icon(Icons.error),
+          ),
+          borderRadius: BorderRadius.all(Radius.circular(4.0)),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 12.0),
           child: Row(
             children: <Widget>[
               ClipOval(
-                  child: CachedNetworkImage(
-                imageUrl: author.icon,
-                placeholder: buildPlaceHolder(42.0, 42.0),
-                errorWidget: new Icon(Icons.error),
-                width: 42.0,
-                height: 42.0,
-              )),
+                child: CachedNetworkImage(
+                  imageUrl: author.icon,
+                  placeholder: buildPlaceHolder(42.0, 42.0),
+                  errorWidget: new Icon(Icons.error),
+                  width: 42.0,
+                  height: 42.0,
+                ),
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 12.0),
@@ -793,9 +801,14 @@ class VideoBeanForClient extends BaseData {
   Widget buildVideoSmallCard() {
     return Row(
       children: <Widget>[
-        Container(
-          child: buildImage(),
-          width: 160.0,
+        ClipRRect(
+          child: CachedNetworkImage(
+            imageUrl: cover.detail,
+            placeholder: Center(child: new CircularProgressIndicator()),
+            errorWidget: new Icon(Icons.error),
+            width: 160.0,
+          ),
+          borderRadius: BorderRadius.all(Radius.circular(4.0)),
         ),
         Expanded(
           child: Padding(
@@ -828,16 +841,6 @@ class VideoBeanForClient extends BaseData {
     );
   }
 
-  ClipRRect buildImage() {
-    return ClipRRect(
-      child: CachedNetworkImage(
-        imageUrl: cover.detail,
-        placeholder: Center(child: new CircularProgressIndicator()),
-        errorWidget: new Icon(Icons.error),
-      ),
-      borderRadius: BorderRadius.all(Radius.circular(4.0)),
-    );
-  }
 
   Text buildTitle() {
     return Text(
@@ -881,7 +884,7 @@ class HorizontalScrollCard extends BaseData {
 //    }
 
     return Container(
-      height: 200.0,
+      height: 230.0,
       child: PageView.builder(
         itemBuilder: (context, position) {
           return itemList[position].getWidget(context);
@@ -915,7 +918,6 @@ class Banner extends BaseData {
       imageUrl: image,
       placeholder: Center(child: new CircularProgressIndicator()),
       errorWidget: new Icon(Icons.error),
-      height: 200.0,
     );
   }
 }
@@ -1189,6 +1191,7 @@ class AutoPlayVideoAdDetail extends BaseData {
       child: Text(
         "这是广告,暂时不显示",
         style: TextStyle(fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
       ),
     );
   }
