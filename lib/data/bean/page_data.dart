@@ -486,8 +486,6 @@ class UgcVideoBean extends UgcBean {
   @override
   Widget getBody(BuildContext context) {
     return Container(
-      height: 300.0,
-      margin: EdgeInsets.only(left: 12.0, top: 8.0, right: 12.0, bottom: 8.0),
       child: GestureDetector(
         child: buildVideo(),
         onTap: () {
@@ -500,19 +498,24 @@ class UgcVideoBean extends UgcBean {
   }
 
   Widget buildVideo() {
-    return Container(
-      height: 200.0,
-      child: buildImage(),
+    return Column(
+      children: <Widget>[
+        Text("这是视频"),
+        buildImage()
+      ],
     );
   }
 
-  ClipRRect buildImage() {
+  Widget buildImage() {
+
     return ClipRRect(
       child: CachedNetworkImage(
         imageUrl: cover.detail,
         placeholder: Center(child: new CircularProgressIndicator()),
         errorWidget: new Icon(Icons.error),
-        fit: BoxFit.fitWidth,
+        fit: BoxFit.cover,
+        height: 200.0,
+        width: double.infinity,
       ),
       borderRadius: BorderRadius.all(Radius.circular(4.0)),
     );
@@ -752,10 +755,15 @@ class VideoBeanForClient extends BaseData {
     return Column(
       children: <Widget>[
         ClipRRect(
-          child: CachedNetworkImage(
-            imageUrl: cover.detail,
-            placeholder: Center(child: new CircularProgressIndicator()),
-            errorWidget: new Icon(Icons.error),
+          child: Container(
+            child: CachedNetworkImage(
+              imageUrl: cover.detail,
+              placeholder: Center(child: new CircularProgressIndicator()),
+              errorWidget: new Icon(Icons.error),
+              fit: BoxFit.cover,
+              height: 200.0,
+              width: double.infinity,
+            ),
           ),
           borderRadius: BorderRadius.all(Radius.circular(4.0)),
         ),
@@ -801,14 +809,17 @@ class VideoBeanForClient extends BaseData {
   Widget buildVideoSmallCard() {
     return Row(
       children: <Widget>[
-        ClipRRect(
-          child: CachedNetworkImage(
-            imageUrl: cover.detail,
-            placeholder: Center(child: new CircularProgressIndicator()),
-            errorWidget: new Icon(Icons.error),
-            width: 160.0,
+        Container(
+          width: 160.0,
+          height: 100.0,
+          child: ClipRRect(
+            child: CachedNetworkImage(
+              imageUrl: cover.detail,
+              placeholder: Center(child: new CircularProgressIndicator()),
+              errorWidget: new Icon(Icons.error),
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(4.0)),
           ),
-          borderRadius: BorderRadius.all(Radius.circular(4.0)),
         ),
         Expanded(
           child: Padding(
