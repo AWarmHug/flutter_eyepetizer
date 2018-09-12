@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_eyepetizer/data/bean/consumption.dart';
-import 'package:flutter_eyepetizer/data/bean/owner.dart';
-import 'package:flutter_eyepetizer/data/bean/tag.dart';
+import 'consumption.dart';
+import 'owner.dart';
+import 'parent_reply.dart';
+import 'tag.dart';
 import 'package:flutter_eyepetizer/detail/detail.dart';
 import 'package:flutter_eyepetizer/utils/app_icons.dart';
 import 'author.dart';
@@ -14,6 +15,31 @@ import 'user.dart';
 import 'simple_video.dart';
 import 'reply.dart';
 import 'package:flutter_eyepetizer/utils/app_icons.dart';
+
+Widget buildPlaceHolder(double widget, double height) {
+  return Container(
+    child: CircularProgressIndicator(),
+    alignment: Alignment.center,
+    width: widget,
+    height: height,
+  );
+}
+
+Widget buildUserAvater(String avatar) {
+  return ClipOval(
+      child: CachedNetworkImage(
+    imageUrl: avatar,
+    placeholder: buildPlaceHolder(42.0, 42.0),
+    errorWidget: new Icon(Icons.error),
+    width: 42.0,
+    height: 42.0,
+  ));
+}
+
+String timeFormate(int time) {
+  DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(time);
+  return "${dateTime.year}/${dateTime.month}/${dateTime.day}";
+}
 
 /**
  * itemList : []
@@ -71,10 +97,11 @@ class ContentItem {
   static const String ugcPicture = "ugcPicture";
   static const String video = "video";
   static const String horizontalScrollCard = "horizontalScrollCard";
-  static const String banner2 = "banner2";
+  static const String banner = "banner";
   static const String briefCard = "briefCard";
   static const String DynamicInfoCard = "DynamicInfoCard";
   static const String autoPlayVideoAd = "autoPlayVideoAd";
+  static const String reply = "reply";
 
   String type;
 
@@ -131,6 +158,9 @@ class ContentItem {
         case BaseData.AutoPlayVideoAdDetail:
           data = AutoPlayVideoAdDetail.fromMap(map["data"]);
           break;
+        case BaseData.ReplyBeanForClient:
+          data = ReplyBeanForClient.fromMap(map["data"]);
+          break;
         default:
           data = BaseData.fromMap(map["data"]);
           break;
@@ -167,6 +197,7 @@ class BaseData {
   static const String BriefCard = "BriefCard";
   static const String DynamicReplyCard = "DynamicReplyCard";
   static const String AutoPlayVideoAdDetail = "AutoPlayVideoAdDetail";
+  static const String ReplyBeanForClient = "ReplyBeanForClient";
 
   ///外层的type
   String outType;
@@ -205,7 +236,7 @@ class ItemCollection extends BaseData {
   Widget getWidget(BuildContext context) {
     //TODO 高度问题
     return Container(
-      height: 300.0,
+      height: 270.0,
       alignment: Alignment.centerLeft,
       child: PageView.builder(
         itemBuilder: (context, position) {
@@ -381,22 +412,13 @@ class UgcBean extends BaseData {
 
   @override
   Widget getWidget(BuildContext context) {
-    DateTime time = DateTime.fromMillisecondsSinceEpoch(updateTime);
-
     return Container(
       margin: EdgeInsets.only(left: 12.0, top: 8.0, right: 12.0, bottom: 8.0),
       child: Column(
         children: <Widget>[
           Row(
             children: <Widget>[
-              ClipOval(
-                  child: CachedNetworkImage(
-                imageUrl: owner.avatar,
-                placeholder: buildPlaceHolder(42.0, 42.0),
-                errorWidget: new Icon(Icons.error),
-                width: 42.0,
-                height: 42.0,
-              )),
+              buildUserAvater(owner.avatar),
               Expanded(
                 child: Container(
                   margin: EdgeInsets.only(left: 12.0),
@@ -427,7 +449,7 @@ class UgcBean extends BaseData {
           getBody(context),
           Row(
             children: <Widget>[
-              Expanded(child: Text("${time.year}/${time.month}/${time.day}")),
+              Expanded(child: Text(timeFormate(updateTime))),
               Icon(
                 AppIcons.like,
                 size: 16.0,
@@ -499,19 +521,15 @@ class UgcVideoBean extends UgcBean {
 
   Widget buildVideo() {
     return Column(
-      children: <Widget>[
-        Text("这是视频"),
-        buildImage()
-      ],
+      children: <Widget>[Text("这是视频"), buildImage()],
     );
   }
 
   Widget buildImage() {
-
     return ClipRRect(
       child: CachedNetworkImage(
         imageUrl: cover.detail,
-        placeholder: Center(child: new CircularProgressIndicator()),
+        placeholder: buildPlaceHolder(double.infinity, 200.0),
         errorWidget: new Icon(Icons.error),
         fit: BoxFit.cover,
         height: 200.0,
@@ -567,7 +585,7 @@ class UgcPictureBean extends UgcBean {
     List<Widget> images = urls.map((url) {
       return CachedNetworkImage(
         imageUrl: cover.detail,
-        placeholder: Center(child: new CircularProgressIndicator()),
+        placeholder: buildPlaceHolder(width, height),
         errorWidget: new Icon(Icons.error),
         fit: BoxFit.cover,
         width: width,
@@ -730,23 +748,27 @@ class VideoBeanForClient extends BaseData {
 
   @override
   Widget getWidget(BuildContext context) {
+    Widget video = GestureDetector(
+      child: outType == ContentItem.videoSmallCard
+          ? buildVideoSmallCard()
+          : buildVideo(),
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+          return VideoDetailPage(this);
+        }));
+      },
+    );
+
     if (outType == ContentItem.videoSmallCard) {
       return Container(
         height: 100.0,
-        margin: EdgeInsets.only(left: 12.0, right: 12.0),
-        child: buildVideoSmallCard(),
+        margin: EdgeInsets.only(left: 12.0, top: 8.0, right: 12.0, bottom: 8.0),
+        child: video,
       );
     } else {
       return Container(
-        margin: EdgeInsets.only(left: 12.0, right: 12.0),
-        child: GestureDetector(
-          child: buildVideo(),
-          onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-              return VideoDetailPage(this);
-            }));
-          },
-        ),
+        margin: EdgeInsets.only(left: 12.0, top: 8.0, right: 12.0, bottom: 8.0),
+        child: video,
       );
     }
   }
@@ -758,33 +780,34 @@ class VideoBeanForClient extends BaseData {
           child: Container(
             child: CachedNetworkImage(
               imageUrl: cover.detail,
-              placeholder: Center(child: new CircularProgressIndicator()),
+              placeholder: buildPlaceHolder(double.infinity, 200.0),
               errorWidget: new Icon(Icons.error),
               fit: BoxFit.cover,
-              height: 200.0,
               width: double.infinity,
+              height: 200.0,
             ),
           ),
           borderRadius: BorderRadius.all(Radius.circular(4.0)),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 12.0),
+        Container(
+          height: 42.0,
+          margin: EdgeInsets.only(top: 8.0),
+          alignment: Alignment.bottomLeft,
           child: Row(
             children: <Widget>[
-              ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: author.icon,
-                  placeholder: buildPlaceHolder(42.0, 42.0),
-                  errorWidget: new Icon(Icons.error),
-                  width: 42.0,
-                  height: 42.0,
-                ),
+              GestureDetector(
+                onTap: () {
+                  print("结婚后");
+                },
+                child: buildUserAvater(author.icon),
               ),
               Expanded(
-                child: Padding(
+                child: Container(
+                  height: 42.0,
                   padding: const EdgeInsets.only(left: 12.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
                       buildTitle(),
                       Text(
@@ -809,22 +832,19 @@ class VideoBeanForClient extends BaseData {
   Widget buildVideoSmallCard() {
     return Row(
       children: <Widget>[
-        Container(
-          width: 160.0,
-          height: 100.0,
-          child: ClipRRect(
-            child: CachedNetworkImage(
-              imageUrl: cover.detail,
-              placeholder: Center(child: new CircularProgressIndicator()),
-              errorWidget: new Icon(Icons.error),
-            ),
-            borderRadius: BorderRadius.all(Radius.circular(4.0)),
+        ClipRRect(
+          child: CachedNetworkImage(
+            imageUrl: cover.detail,
+            placeholder: buildPlaceHolder(160.0, 100.0),
+            errorWidget: new Icon(Icons.error),
           ),
+          borderRadius: BorderRadius.all(Radius.circular(4.0)),
         ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 12.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               textBaseline: TextBaseline.ideographic,
               children: <Widget>[
                 Expanded(
@@ -852,12 +872,12 @@ class VideoBeanForClient extends BaseData {
     );
   }
 
-
   Text buildTitle() {
     return Text(
       title,
       style: TextStyle(
           color: Colors.black, fontSize: 14.0, fontWeight: FontWeight.bold),
+      maxLines: 1,
     );
   }
 }
@@ -929,6 +949,8 @@ class Banner extends BaseData {
       imageUrl: image,
       placeholder: Center(child: new CircularProgressIndicator()),
       errorWidget: new Icon(Icons.error),
+      width: double.infinity,
+      fit: BoxFit.cover,
     );
   }
 }
@@ -1085,15 +1107,7 @@ class DynamicReplyCard extends BaseData {
   }
 
   Widget buildAvatar() {
-    return ClipOval(
-      child: CachedNetworkImage(
-        imageUrl: user.avatar,
-        placeholder: buildPlaceHolder(42.0, 42.0),
-        errorWidget: new Icon(Icons.error),
-        width: 42.0,
-        height: 42.0,
-      ),
-    );
+    return buildUserAvater(user.avatar);
   }
 
   Widget buildHeaderText() {
@@ -1183,15 +1197,6 @@ class DynamicReplyCard extends BaseData {
   }
 }
 
-Widget buildPlaceHolder(double widget, double height) {
-  return Container(
-    child: CircularProgressIndicator(),
-    alignment: Alignment.center,
-    width: widget,
-    height: height,
-  );
-}
-
 class AutoPlayVideoAdDetail extends BaseData {
   AutoPlayVideoAdDetail.fromMap(Map<String, dynamic> map) : super.fromMap(map);
 
@@ -1203,6 +1208,160 @@ class AutoPlayVideoAdDetail extends BaseData {
         "这是广告,暂时不显示",
         style: TextStyle(fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
+      ),
+    );
+  }
+}
+
+//{
+//"dataType": "ReplyBeanForClient",
+//"id": 1037217596635611100,
+//"videoId": 120654,
+//"videoTitle": "爱情诚可贵，友谊价更高",
+//"parentReplyId": 0,
+//"rootReplyId": 1037217596635611100,
+//"sequence": 12,
+//"message": "值得深思",
+//"replyStatus": "PUBLISHED",
+//"createTime": 1536126920000,
+//"user": {},
+//"likeCount": 0,
+//"liked": false,
+//"hot": false,
+//"userType": null,
+//"type": "video",
+//"actionUrl": null,
+//"imageUrl": null,
+//"ugcVideoId": null,
+//"parentReply": null,
+//"showParentReply": true,
+//"showConversationButton": false,
+//"ugcVideoUrl": null,
+//"cover": null,
+//"userBlocked": false,
+//"sid": "1037217596635611136"
+//}
+class ReplyBeanForClient extends BaseData {
+  int id;
+  int videoId;
+  String videoTitle;
+  int parentReplyId;
+  int rootReplyId;
+  String message;
+  int createTime;
+  User user;
+  int likeCount;
+  bool hot;
+  String type;
+  String actionUrl;
+  String imageUrl;
+  ParentReply parentReply;
+
+  ReplyBeanForClient.fromMap(Map<String, dynamic> map) : super.fromMap(map) {
+    id = map["id"];
+    videoId = map["videoId"];
+    videoTitle = map["videoTitle"];
+    parentReplyId = map["parentReplyId"];
+    rootReplyId = map["rootReplyId"];
+    message = map["message"];
+    createTime = map["createTime"];
+    user = User.fromMap(map["user"]);
+    likeCount = map["likeCount"];
+    hot = map["hot"];
+    type = map["type"];
+    actionUrl = map["actionUrl"];
+    imageUrl = map["imageUrl"];
+    dynamic dyParentReply = map["parentReply"];
+    if (dyParentReply != null) {
+      parentReply = ParentReply.fromMap(dyParentReply);
+    }
+  }
+
+  @override
+  Widget getWidget(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          buildUserAvater(user.avatar),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          user.nickname,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Icon(
+                            AppIcons.like,
+                            size: 20.0,
+                            color: Colors.white,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text(
+                              likeCount.toString(),
+                              style: TextStyle(
+                                  fontSize: 14.0,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        ],
+                      ),
+                    ],
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      message,
+                      style: TextStyle(color: Colors.white, fontSize: 14.0),
+                    ),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Offstage(
+                        child: Text(
+                          "查看对话",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        offstage: parentReply == null,
+                      ),
+                      Expanded(
+                          child: Text(
+                        timeFormate(createTime),
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12.0,
+                        ),
+                        textAlign: TextAlign.end,
+                      )),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )
+        ],
       ),
     );
   }

@@ -20,6 +20,8 @@ class VideoDetailPage extends StatefulWidget {
 class _VideoDetailState extends State<VideoDetailPage> {
   List<ContentItem> _contentItems = [];
 
+  int index = 0;
+
   @override
   void initState() {
     getVideoRelated(widget.videoBeanForClient.id).then((contentItems) {
@@ -38,36 +40,50 @@ class _VideoDetailState extends State<VideoDetailPage> {
       autoPlay: true,
       looping: true,
     );
-
-    return MaterialApp(
-      home: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: CachedNetworkImageProvider(
-                      widget.videoBeanForClient.cover.blurred),
-                  fit: BoxFit.cover)),
-          child: Column(
-            children: <Widget>[
-              playerWidget,
-              Expanded(
-                child: ListView.builder(
-                  itemBuilder: (context, position) {
-                    switch (position) {
-                      case 0:
-                        return buildVideoInfo(context);
-                      case 1:
-                        return buildTags(context);
-                      case 2:
-                        return buildAuthor(context);
-                      default:
-                        return buildRelatedInfo(context, position - 3);
-                    }
-                  },
-                  itemCount: _contentItems.length + 3,
-                ),
-              )
-            ],
+    return WillPopScope(
+      onWillPop: (){
+        if(index==1){
+          setState(() {
+            index=0;
+          });
+          return Future.value(false);
+        }
+        return Future.value(true);
+      },
+      child: MaterialApp(
+        home: Scaffold(
+          body: Container(
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: CachedNetworkImageProvider(
+                        widget.videoBeanForClient.cover.blurred),
+                    fit: BoxFit.cover)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                playerWidget,
+                Expanded(
+                  child: IndexedStack(index: index, children: <Widget>[
+                    ListView.builder(
+                      itemBuilder: (context, position) {
+                        switch (position) {
+                          case 0:
+                            return buildVideoInfo(context);
+                          case 1:
+                            return buildTags(context);
+                          case 2:
+                            return buildAuthor(context);
+                          default:
+                            return buildRelatedInfo(context, position - 3);
+                        }
+                      },
+                      itemCount: _contentItems.length + 3,
+                    ),
+                    CommentList(widget.videoBeanForClient.id)
+                  ]),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -75,10 +91,13 @@ class _VideoDetailState extends State<VideoDetailPage> {
   }
 
   Widget buildVideoInfo(BuildContext context) {
-    Widget title = Text(
-      widget.videoBeanForClient.title,
-      style: TextStyle(
-          fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.white),
+    Widget title = Container(
+      color: Colors.black,
+      child: Text(
+        widget.videoBeanForClient.title,
+        style: TextStyle(
+            fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.white),
+      ),
     );
 
     Widget description = Padding(
@@ -117,7 +136,11 @@ class _VideoDetailState extends State<VideoDetailPage> {
               textAlign: TextAlign.center,
             )),
         FlatButton.icon(
-            onPressed: null,
+            onPressed: () {
+              setState(() {
+                index = 1;
+              });
+            },
             icon: Icon(
               AppIcons.reply,
               color: Colors.white,
@@ -147,7 +170,7 @@ class _VideoDetailState extends State<VideoDetailPage> {
     );
 
     return Padding(
-      padding: const EdgeInsets.only(left: 12.0, right: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[title, description, action],
@@ -156,19 +179,26 @@ class _VideoDetailState extends State<VideoDetailPage> {
   }
 
   Widget buildTags(BuildContext context) {
-    List<Widget> tagWidgets = widget.videoBeanForClient.tags.map((tag) {
-      return Container(
-        height: 56.0,
-        width: (MediaQuery.of(context).size.width - 40) /
-            widget.videoBeanForClient.tags.length,
-        alignment: Alignment.center,
-        child: Text(
-          tag.name,
-          style: TextStyle(color: Colors.white, fontSize: 12.0),
-        ),
-        decoration: BoxDecoration(
+    List<Widget> tagWidgets = widget.videoBeanForClient.tags.take(3).map((tag) {
+      return ClipRRect(
+        borderRadius: BorderRadius.all(Radius.circular(4.0)),
+        child: Container(
+          height: 64.0,
+          width: (MediaQuery.of(context).size.width - 48) / 3,
+          alignment: Alignment.center,
+          child: Text(
+            "#${tag.name}#",
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 12.0,
+                fontWeight: FontWeight.bold),
+          ),
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(4.0)),
-            image: DecorationImage(image: NetworkImage(tag.bgPicture))),
+            image: DecorationImage(
+                image: NetworkImage(tag.bgPicture), fit: BoxFit.cover),
+          ),
+        ),
       );
     }).toList();
     return Padding(
@@ -176,7 +206,7 @@ class _VideoDetailState extends State<VideoDetailPage> {
           const EdgeInsets.only(left: 12.0, top: 8.0, right: 12.0, bottom: 8.0),
       child: Row(
         children: tagWidgets,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
       ),
     );
   }
@@ -227,16 +257,52 @@ class _VideoDetailState extends State<VideoDetailPage> {
   }
 }
 
-class ImageDetailPage extends StatefulWidget {
+class CommentList extends StatefulWidget {
+  int videoId;
+
+  CommentList(this.videoId);
+
   @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-  }
+  _CommentListState createState() => _CommentListState();
 }
 
-class _ImageDetailState extends State<ImageDetailPage> {
+class _CommentListState extends State<CommentList> {
+  PageData pageData;
+
+  @override
+  void initState() {
+    load(videoId: widget.videoId);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
+    if (pageData == null || pageData.itemList == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      return ListView.builder(
+        itemCount: pageData.itemList.length,
+        itemBuilder: (BuildContext context, int position) {
+          if (position == pageData.itemList.length - 1) {
+            load(nextUrl: pageData.nextPageUrl);
+          }
+          return pageData.itemList[position].getWidget(context);
+        },
+      );
+    }
+  }
+
+  void load({int videoId, String nextUrl}) {
+    getReplies(videoId: videoId, nextUrl: nextUrl).then((pageData) {
+      setState(() {
+        if (this.pageData == null) {
+          this.pageData = pageData;
+        } else {
+          this.pageData += pageData;
+        }
+      });
+    });
   }
 }

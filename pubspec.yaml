@@ -19,8 +19,11 @@ dependencies:
   cupertino_icons: ^0.1.2
   cached_network_image: ^0.4.1
   chewie: ^0.7.0
+  json_annotation: ^1.1.0
 
 dev_dependencies:
+  build_runner: ^0.10.1+1
+  json_serializable: ^1.2.1
   flutter_test:
     sdk: flutter
 

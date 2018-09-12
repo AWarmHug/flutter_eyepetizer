@@ -13,7 +13,7 @@ class MainPageItem extends StatefulWidget {
 }
 
 class _MainPageItemState extends State<MainPageItem> {
-  PageData pageDate;
+  PageData pageData;
   bool loading=false;
 
   @override
@@ -31,10 +31,10 @@ class _MainPageItemState extends State<MainPageItem> {
     loading=true;
     getPageData(url).then((pageData) {
       setState(() {
-        if (this.pageDate == null) {
-          this.pageDate = pageData;
+        if (this.pageData == null) {
+          this.pageData = pageData;
         } else {
-          this.pageDate += pageData;
+          this.pageData += pageData;
         }
       });
       loading=false;
@@ -43,18 +43,18 @@ class _MainPageItemState extends State<MainPageItem> {
 
   @override
   Widget build(BuildContext context) {
-    if (pageDate == null || pageDate.itemList == null) {
+    if (pageData == null || pageData.itemList == null) {
       return Center(
         child: CircularProgressIndicator(),
       );
     } else {
       return ListView.builder(
-        itemCount: pageDate.itemList.length,
+        itemCount: pageData.itemList.length,
         itemBuilder: (BuildContext context, int position) {
-          if (position == pageDate.itemList.length - 1) {
-            load(pageDate.nextPageUrl);
+          if (position == pageData.itemList.length - 1) {
+            load(pageData.nextPageUrl);
           }
-          return pageDate.itemList[position].getWidget(context);
+          return pageData.itemList[position].getWidget(context);
         },
       );
     }
